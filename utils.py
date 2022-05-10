@@ -2,10 +2,18 @@ import numpy as np
 
 def get_model(args):
     model = None
-    if args.model == 'resnet18':
-        from models.net import Net
-        # foobar
-        # model = Net(args)
+    if args.model == 'presnet10':
+        from models.net import presnet10
+        model = presnet10(
+            num_classes=args.num_classes,
+            act = args.act,
+        )
+    elif args.model == 'presnet14':
+        from models.net import presnet14
+        model = presnet14(
+            num_classes=args.num_classes,
+            act = args.act,
+        )
     else:
         raise ValueError(f"No such model: {args.model}")
 

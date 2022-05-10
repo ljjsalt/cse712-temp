@@ -9,8 +9,8 @@ from utils import get_model
 from train import Trainer
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', required=True, choices=['c10', 'c100', 'svhn'])
-parser.add_argument('--model', required=True, choices=['mixer', 'qmixer', 'squeeze_net', 'alex_net', 'resnet18', 'qresnet18', 'resnet34', 'qresnet34'])
+parser.add_argument('--dataset', required=True, choices=['c10', 'c100', 'svhn', 'chest'])
+parser.add_argument('--model', required=True, choices=['presnet10', 'presnet14'])
 parser.add_argument('--batch-size', type=int, default=128)
 parser.add_argument('--eval-batch-size', type=int, default=1024)
 parser.add_argument('--num-workers', type=int, default=4)
@@ -18,15 +18,15 @@ parser.add_argument('--seed', type=int, default=3407)
 parser.add_argument('--epochs', type=int, default=300)
 # parser.add_argument('--precision', type=int, default=16)
 
-parser.add_argument('--patch-size', type=int, default=4)
 
+parser.add_argument('--patch-size', type=int, default=4)
 parser.add_argument('--hidden-size', type=int, default=128)
 parser.add_argument('--hidden-c', type=int, default=512)
 parser.add_argument('--hidden-s', type=int, default=64)
 parser.add_argument('--num-layers', type=int, default=8)
 parser.add_argument('--drop-p', type=int, default=0.)
 parser.add_argument('--off-act', action='store_true', help='Disable activation function') # TODO: remove
-parser.add_argument('--act', type=str, default="gelu", help='Choose activation function')
+parser.add_argument('--act', type=str, default="relu", help='Choose activation function')
 # parser.add_argument('--co', action='store_true', help='Use a copilot')
 parser.add_argument('--is-cls-token', action='store_true', help='Introduce a class token.')
 parser.add_argument('--groups', type=int, default=1)
@@ -55,8 +55,6 @@ torch.random.manual_seed(args.seed)
 
 experiment_name = f"{args.model}_{args.dataset}_{args.optimizer}_{args.scheduler}"
 
-# experiment name
-# experiment_name += ...
 
 if __name__=='__main__':
     with wandb.init(project=args.model, config=args, name=experiment_name):

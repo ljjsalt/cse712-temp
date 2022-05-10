@@ -8,7 +8,7 @@ import numpy as np
 
 from utils import rand_bbox
 
-
+best_acc = 0
 class Trainer(object):
     def __init__(self, model, args):
         wandb.config.update(args)
@@ -43,6 +43,9 @@ class Trainer(object):
 
         self.num_steps = 0
         self.epoch_loss, self.epoch_corr, self.epoch_acc = 0., 0., 0.
+
+        self.best_acc = 0
+        self.model_name = f"{args.model}_{args.dataset}"
     
     def _train_one_step(self, batch):
         self.model.train()
@@ -124,3 +127,6 @@ class Trainer(object):
                 'val_acc': self.epoch_acc
                 }, step=self.num_steps
             )
+            if self.epoch_acc > self.best_acc:
+                self.best_acc = self.epoch_acc
+                torch.save(self.model.state_dict(), f'ckpt/{self.model_name}_best.pth')

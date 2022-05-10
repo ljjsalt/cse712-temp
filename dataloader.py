@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.append('./AutoAugment/')
 
@@ -26,6 +27,10 @@ def get_dataloaders(args):
         train_ds = torchvision.datasets.ImageNet('./datasets', split='train', transform=train_transform, download=True)
         test_ds = torchvision.datasets.ImageNet('./datasets', split='val', transform=test_transform, download=True)
         args.num_classes = 1000
+    elif args.dataset == "chest":
+        train_ds = torchvision.datasets.ImageFolder('./datasets/chest_xray/train' ,transform = train_transform)
+        test_ds = torchvision.datasets.ImageFolder('./datasets/chest_xray/test' ,transform = test_transform)
+        args.num_classes = 2
     else:
         raise ValueError(f"No such dataset:{args.dataset}")
 
@@ -44,12 +49,24 @@ def get_transform(args):
             args.mean, args.std = [0.5071, 0.4867, 0.4408], [0.2675, 0.2565, 0.2761]
         elif args.dataset=="svhn":
             args.mean, args.std = [0.4377, 0.4438, 0.4728], [0.1980, 0.2010, 0.1970]
+    elif args.dataset == "chest":
+        args.size = 96
+        args.mean, args.std = [0.4823, 0.4823, 0.4823], [0.2197, 0.2197, 0.2197]
     else:
         args.padding=28
         args.size = 224
         args.mean, args.std = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
-    train_transform_list = [transforms.RandomCrop(size=(args.size,args.size), padding=args.padding)]
-    if args.dataset!="svhn":
+    # train_transform_list = [transforms.RandomCrop(size=(args.size,args.size), padding=args.padding)]
+    train_transform_list = []
+    test_transform_list = []
+    if args.dataset == "chest":
+        # train_transform_list+= [transforms.Grayscale(num_output_channels=1), transforms.Resize((args.size,args.size))]
+        # test_transform_list+= [transforms.Grayscale(num_output_channels=1), transforms.Resize((args.size,args.size))]
+        train_transform_list+= [transforms.Resize((args.size,args.size))]
+        test_transform_list+= [transforms.Resize((args.size,args.size))]
+
+
+    if args.dataset in ["c10", "c100"]:
         train_transform_list.append(transforms.RandomCrop(size=(args.size,args.size), padding=args.padding))
 
     if args.autoaugment:
@@ -60,7 +77,6 @@ def get_transform(args):
         else:
             print(f"No AutoAugment for {args.dataset}")   
         
-
     train_transform = transforms.Compose(
         train_transform_list+[
             transforms.ToTensor(),
@@ -70,7 +86,8 @@ def get_transform(args):
             )
         ]
     )
-    test_transform = transforms.Compose([
+    test_transform = transforms.Compose(
+        test_transform_list+[
         transforms.ToTensor(),
         transforms.Normalize(
             mean=args.mean,
